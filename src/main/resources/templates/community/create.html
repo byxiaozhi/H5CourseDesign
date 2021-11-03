@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>社区</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=false)"/>
+<main class="page-wrapper">
+    <div class="modal fade" id="modalAddTag" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">添加标签</h4>
+                    <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="fs-sm"><input class="form-control rounded" type="text" placeholder="标签名称"
+                                            v-model="tmpTag"></p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary btn-sm" type="button" data-bs-dismiss="modal">取消</button>
+                    <button class="btn btn-primary btn-shadow btn-sm" type="button" data-bs-dismiss="modal"
+                            @click="addTag">确定
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="sidebar-enabled">
+        <div class="container">
+            <div class="row">
+                <th:block th:replace="components/community::Sidebar"/>
+                <div class="col-lg-9 content py-4" style="padding-left: 15px">
+                    <div class="row mt-3">
+                        <div class="col d-flex align-items-center mb-3 ps-lg-3">
+                            <label class="me-2">
+                                <select class="form-select" v-model="form.category"
+                                        style="width: 120px">
+                                    <option value="" class="d-none">-请选择-</option>
+                                    <option th:each="item : ${categories}" th:text="${item}"
+                                            th:value="${item}"></option>
+                                </select>
+                            </label>
+                            <input class="form-control rounded" type="text" maxlength="64" placeholder="标题" v-model="form.title">
+                        </div>
+                        <div class="mb-3">
+                            <th:block th:replace="components/main::Tinymce"/>
+                        </div>
+                        <div class="w-100">
+                            <div class="float-start h-100">
+                                <span class="border btn px-3 me-2" v-for="tag in form.tags" @click="delTag(tag)">#{{tag}}</span>
+                                <button type="button" class="btn btn-secondary" data-bs-toggle="modal"
+                                        data-bs-target="#modalAddTag">
+                                    <i class="ai-plus"></i>
+                                    标签
+                                </button>
+                            </div>
+                            <div class="float-end">
+                                <button type="button" class="btn btn-primary" @click="post" :class="{ disabled : loading }">
+                                    发表
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script>
+    var app = new Vue({
+        el: 'main',
+        data: {
+            tmpTag: '',
+            form: {
+                category: '',
+                title: '',
+                tags: [],
+            },
+            loading: false
+        },
+        methods: {
+            post: function () {
+                message.confirm("提示", "确定要发表吗？", () => {
+                    this.loading = true;
+                    this.$http.post('/api/community/create', {
+                        ...this.form,
+                        content: tinymce.activeEditor.getContent()
+                    }).then(({data}) => {
+                        if (data.code === 0) {
+                            window.location.href = "/community";
+                        } else {
+                            this.loading = false;
+                            message.add("发表失败", data.msg);
+                        }
+                    }, () => {
+                        this.loading = false;
+                        message.add("发表失败", "网络连接发生错误");
+                    });
+                });
+            },
+            addTag: function () {
+                if(this.tmpTag.trim() === "")
+                    return;
+                this.form.tags = [...this.form.tags.filter(t => t !== this.tmpTag.trim()).slice(-4), this.tmpTag];
+                this.tmpTag = "";
+            },
+            delTag: function (e) {
+                this.form.tags = this.form.tags.filter(t => t !== e);
+            }
+        },
+    });
+</script>
+</body>
+</html>

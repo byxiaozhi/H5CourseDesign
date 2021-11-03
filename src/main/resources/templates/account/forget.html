@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>测试</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead" />
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)" />
+<main class="page-wrapper d-flex flex-column">
+    <div class="container py-5 py-sm-6 py-md-7">
+        <div class="row justify-content-center pt-4">
+            <div class="col-lg-7 col-md-9 col-sm-11 mt-lg-7">
+                <div class="bg-light rounded-3 shadow-lg px-3 py-4 p-sm-4">
+                    <h1 class="h2 mb-4">找回密码</h1>
+                    <form class="needs-validation" novalidate>
+                        <div class="mb-3 pb-1">
+                            <input class="form-control" type="email" placeholder="邮箱" required id="recovery-email">
+                            <div class="invalid-feedback">Please provide a valid email address!</div>
+                        </div>
+                        <button class="btn btn-primary" type="submit">发送验证邮件</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer" />
+<th:block th:replace="components/main::IncludeFoot" />
+</body>
+</html>

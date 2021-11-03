@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>文档上传</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper" v-cloak>
+    <div class="container position-relative zindex-5 pb-4 mt-lg-7 mt-6">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-lg p-4">
+            <div class="row">
+                <div class="col col-12 col-md-8 d-flex flex-column">
+                    <input ref="file" type="file" @change="setFile" class="position-absolute d-none">
+                    <div class="input-group mb-3">
+                        <input class="form-control bg-light" :style="uploadFailed ? 'color: #f74f78' : ''" readonly @click="!uploading && $refs.file.click()" type="text" v-model="uploadFileName"
+                               placeholder="Word、PowerPoint、Excel、PDF">
+                        <button class="btn btn-primary" type="button" @click="$refs.file.click()" :class="{ disabled : uploading }">
+                            <span v-if="uploading" class="spinner-border spinner-border-sm me-2" role="status" style="margin-bottom: 1px"></span>
+                            {{uploading ? uploadProgress : '选择文件'}}
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <label class="h-100 me-2">
+                            <select class="form-select form-select h-100" v-model="form.category" style="width: 150px">
+                                <option value="" class="d-none">-请选择-</option>
+                                <option th:each="item : ${categories}" th:text="${item}"
+                                        th:value="${item}"></option>
+                            </select>
+                        </label>
+                        <input class="form-control" type="text" maxlength="64" v-model="form.title" placeholder="标题">
+                    </div>
+                    <textarea class="form-control mb-4" type="text" maxlength="300" v-model="form.description" style="height: 200px" placeholder="简介"></textarea>
+                </div>
+                <div class="col-12 col-md-4 mb-4">
+                    <cover-selector v-model="form.cover"></cover-selector>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-primary" @click="post" :class="{ disabled : loading }">
+                    上传
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script>
+    var app = new Vue({
+        el: 'main',
+        data: {
+            uploading: false,
+            uploadProgress: '',
+            uploadFailed: false,
+            uploadFileName: '',
+            uploadFileURL: '',
+            form: {
+                cover: '',
+                title: '',
+                category: '',
+                content: '',
+                description: '',
+            },
+            loading: false
+        },
+        methods: {
+            setFile: function () {
+                const objFile = this.$refs.file.files[0];
+                if (objFile === undefined)
+                    return
+                this.uploadFileName = objFile.name;
+                if (objFile.size > 100 * 1024 * 1024) {
+                    this.uploadFailed = true;
+                    message.add("上传失败", "文件大小不能超过100MB");
+                    return;
+                } else {
+                    this.uploading = true;
+                    this.uploadFailed = false;
+                }
+                const formData = new FormData();
+                formData.append('file', objFile);
+                this.$http.post('https://media.ownfiles.cn/upload_document.php', formData, {
+                    progress: (event) => {
+                        const progress = event.loaded / event.total;
+                        this.uploadProgress = progress < 1 ? Math.round(progress * 100) + "%" : "处理中";
+                    }
+                }).then(({data}) => {
+                    this.uploading = false;
+                    this.uploadFileURL = data.data;
+                    this.uploadFailed = data.code !== 0;
+                    data.code !== 0 && message.add("上传失败", data.msg);
+                }, () => {
+                    this.uploading = false;
+                    this.uploadFailed = true;
+                    message.add("上传失败", "网络连接发生错误");
+                });
+            },
+            post: function () {
+                this.form.content = this.uploadFileURL;
+                message.confirm("提示", "确定要投稿吗？", () => {
+                    this.loading = true;
+                    this.$http.post('/api/document/create', this.form).then(({data}) => {
+                        if (data.code === 0) {
+                            window.location.href = "/document";
+                        } else {
+                            this.loading = false;
+                            message.add("投稿失败", data.msg);
+                        }
+                    }, () => {
+                        this.loading = false;
+                        message.add("投稿失败", "网络连接发生错误");
+                    });
+                });
+            }
+        }
+    });
+</script>
+</body>
+</html>

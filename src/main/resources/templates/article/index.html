@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>文章</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper" v-cloak>
+    <div class="container py-4 mb-2 mb-sm-0 pb-sm-5 mt-lg-6 mt-5">
+        <div class="row mx-0 mb-2 justify-content-between">
+            <ul class="col-lg-auto nav nav-tabs justify-content-center">
+                <li class="nav-item"><a class="nav-link" th:classappend="${category == '全部'} ? 'active'" href="/article">全部</a></li>
+                <li th:each="item : ${categories}">
+                    <a class="nav-link"
+                       th:classappend="${category == item} ? 'active'"
+                       th:href="@{/article(category=${item})}"
+                       th:text="${item}"></a>
+                </li>
+            </ul>
+            <div class="col-lg-auto px-0 mb-3 ">
+                <div class="input-group">
+                    <i class="ai-search position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                    <input class="form-control rounded" type="text" th:value="${search}" placeholder="标题、简介、内容" onkeydown="((e) => { e.keyCode === 13 && (window.location.href = `/article?search=${this.value}`)})(event)">
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-9">
+                <!-- Post-->
+                <article class="card card-horizontal card-hover mb-grid-gutter" v-for="(item) in articles">
+                    <a class="card-img-top" :href="'/article/view?id=' + + item.id" :style="`background-image: url(${item.cover});`"></a>
+                    <div class="card-body" style="min-width: 0">
+                        <a class="meta-link fs-sm mb-2" :href="'/account/overview?uid=' + item.userid" v-text="item.nickname"></a>
+                        <div class="h4 nav-heading mb-3">
+                            <a :href="'/article/view?id=' + + item.id" v-text="item.title"></a>
+                        </div>
+                        <p class="fs-sm align-items-center mb-4 text-break" style="white-space: pre-wrap;" v-text="item.description"></p>
+                        <div class="fs-xs text-nowrap position-absolute end-0 bottom-0 m-4">
+                            <div>
+                                <i class="ai-message-square me-1"></i>&nbsp;{{item.commentCount}}
+                                <span class="meta-divider"></span>
+                                <i class="ai-calendar me-1 mt-n1"></i>&nbsp;{{item.createTime}}
+                            </div>
+                        </div>
+                    </div>
+                </article>
+
+                <pagination :pages="pages" :now-page="nowPage" :on-change="changePage"></pagination>
+
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script th:inline="javascript">
+    const talkList = new Vue({
+            el: 'main',
+            data: {
+                category: [[${category}]],
+                count: 0,
+                pages: [],
+                nowPage: 1,
+                maxPage: '',
+                articles: [],
+            },
+            methods: {
+                load: function () {
+                    this.$http.get('/api/article/getArticleList', {params: {category: [[${category}]], search: [[${search}]], page: this.nowPage}}).then(({data}) => {
+                        this.count = data.data.count;
+                        this.pages = data.data.pages;
+                        this.nowPage = data.data.nowPage;
+                        this.maxPage = data.data.maxPage;
+                        this.articles = data.data.articles;
+                        window.scroll({top: 0, left: 0, behavior: 'smooth'});
+                    }, () => {
+
+                    });
+                },
+                changePage: function (page) {
+                    this.nowPage = Math.min(this.maxPage, Math.max(1, page));
+                    this.load();
+                }
+            },
+            mounted: function () {
+                this.load();
+            }
+        }
+    );
+</script>
+</body>
+</html>

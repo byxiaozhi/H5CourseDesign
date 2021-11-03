@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title th:text="${title} + ' - 社区'"></title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=false)"/>
+<main class="page-wrapper d-flex flex-column" v-cloak>
+    <div class="sidebar-enabled">
+        <div class="container" style="min-height: 300px">
+            <div class="row">
+                <th:block th:replace="components/community::Sidebar"/>
+                <div class="col-lg-9 content bg-light py-4 mb-2 mb-sm-0 pb-sm-5 p-4">
+                    <div class="row mb-3 mt-3 mb-lg-4">
+                        <div class="col d-flex align-items-center">
+                            <h2 class="mb-0 text-break" th:text="${title}"></h2>
+                        </div>
+                    </div>
+                    <div id="toolbar" class="row position-relative g-0 align-items-center border-top border-bottom mb-4">
+                        <div class="col py-3">
+                            <div class="d-flex align-items-center ">
+                                <div class="d-flex align-items-center me-grid-gutter">
+                                    <a class="d-block" th:href="@{/account/overview(uid=${userid})}">
+                                    <img class="rounded-circle me-1" th:src="@{/avatar(email=${email})}" width="64" height="64">
+                                    </a>
+                                    <div class="ps-2">
+                                        <h6 class="nav-heading mb-1"><a th:href="@{/account/overview(uid=${userid})}" th:text="${nickname}"></a></h6>
+                                        <div class="text-nowrap">
+                                            <div class="meta-link fs-xs">
+                                                <i class="ai-calendar me-1 align-vertical"></i>
+                                                <th:block th:text="${createTime}" />
+                                            </div>
+                                            <span class="meta-divider"></span>
+                                            <a class="meta-link fs-xs" href="#comment" data-scroll>
+                                                <i class="ai-message-square me-1 align-vertical"></i>
+                                                <th:block th:text="${commentCount}" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-outline-primary btn-sm me-2" @click="setFavorite" v-text="isFavorite ? '取消收藏' : '收藏'"></button>
+                        </div>
+                    </div>
+                    <div class="text-break" style="min-height: 400px;" th:utext="${content}">
+                    </div>
+                    <div class="position-relative g-0 align-items-center border-top mb-4 py-4">
+                        <comment object="community" th:object-id="${id}"></comment>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script th:inline="javascript">
+    var app = new Vue({
+        el: 'main',
+        data: {
+            isFavorite: [[${isFavorite}]]
+        },
+        methods: {
+            setFavorite: function () {
+                this.$http.post('/api/account/setFavorite', {favorite: !this.isFavorite, objectId: [[${id}]]}).then(({data}) => {
+                    if(data.code === 0)
+                        this.isFavorite = data.data;
+                    else
+                        message.add("收藏失败", data.msg);
+                });
+            }
+        },
+        mounted: function () {
+        }
+    });
+</script>
+</body>
+</html>

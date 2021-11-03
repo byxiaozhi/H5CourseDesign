@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>文库</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=false)"/>
+<main class="page-wrapper" v-cloak>
+    <div id="document" class="position-relative mb-4" style="overflow: hidden" :style="`height: calc(100vh - ${headerHeight}px);`">
+        <iframe :class="{'d-none' : loading || failure}" ref="iframe" style="margin: -1px; width: calc(100% + 2px); height: calc(100% + 2px);">
+        </iframe>
+        <div v-if="loading" class="h-100 d-flex justify-content-center align-items-center">
+            <span class="spinner-grow spinner-grow-sm me-2" role="status" aria-hidden="true"></span>
+            加载中...
+        </div>
+        <div v-if="failure" class="h-100 d-flex justify-content-center align-items-center">
+            <span class="ai-alert-circle me-2" role="status" aria-hidden="true"></span>
+            加载失败，请稍后再试！
+        </div>
+    </div>
+    <div class="container position-relative mb-4">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-sm px-4 pt-1">
+            <div id="toolbar" class="row position-relative g-0 align-items-center mb-2">
+                <div class="col py-3">
+                    <div class="d-flex align-items-center ">
+                        <div class="d-flex align-items-center me-grid-gutter">
+                            <a class="d-block" th:href="@{/account/overview(uid=${userid})}">
+                                <img class="rounded-circle me-1" th:src="@{/avatar(email=${email})}" width="64" height="64">
+                            </a>
+                            <div class="ps-2">
+                                <h6 class="nav-heading mb-1"><a th:href="@{/account/overview(uid=${userid})}" th:text="${nickname}"></a></h6>
+                                <div class="text-nowrap">
+                                    <div class="meta-link fs-xs">
+                                        <i class="ai-calendar me-1 align-vertical"></i>
+                                        <th:block th:text="${createTime}"/>
+                                    </div>
+                                    <span class="meta-divider"></span>
+                                    <a class="meta-link fs-xs" href="#comment" data-scroll>
+                                        <i class="ai-message-square me-1 align-vertical"></i>
+                                        <th:block th:text="${commentCount}"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-outline-primary btn-sm me-2" @click="setFavorite" v-text="isFavorite ? '取消收藏' : '收藏'"></button>
+                </div>
+            </div>
+            <div class="mb-4" th:text="${description}" style="white-space: pre-wrap;"></div>
+        </div>
+    </div>
+    <div class="container position-relative mb-4">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-sm p-4">
+            <comment object="document" th:object-id="${id}"></comment>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script th:inline="javascript">
+    var app = new Vue({
+        el: 'main',
+        data: {
+            failure: false,
+            loading: true,
+            headerHeight: 0,
+            isFavorite: [[${isFavorite}]]
+        },
+        methods: {
+            resize: function () {
+                this.headerHeight = document.querySelector("header").offsetHeight;
+            },
+            load: function () {
+                this.$http.get('/api/document/getDocumentViewUrl', {params: {id: [[${id}]]}}).then(({data}) => {
+                    const iframe = this.$refs.iframe;
+                    if (data.code === 0) {
+                        iframe.src = data.data;
+                        iframe.onload = () => setTimeout(() => this.loading = false, 1000);
+                    } else {
+                        this.loading = false;
+                        this.failure = true;
+                        console.log(1);
+                    }
+                }, () => {
+                    this.loading = false;
+                    this.failure = true;
+                });
+            },
+            setFavorite: function () {
+                this.$http.post('/api/account/setFavorite', {favorite: !this.isFavorite, objectId: [[${id}]]}).then(({data}) => {
+                    if(data.code === 0)
+                        this.isFavorite = data.data;
+                    else
+                        message.add("收藏失败", data.msg);
+                });
+            }
+
+        },
+        mounted: function () {
+            window.addEventListener("resize", () => this.resize());
+            this.resize();
+            this.load();
+        }
+    });
+</script>
+</body>
+</html>

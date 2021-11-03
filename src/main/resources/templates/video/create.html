@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>视频投稿</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper" v-cloak>
+    <div class="container position-relative zindex-5 pb-4 mt-lg-7 mt-6">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-lg p-4">
+            <div class="row">
+                <div class="col col-12 col-md-8 d-flex flex-column">
+                    <input ref="file" type="file" @change="setFile" class="position-absolute d-none">
+                    <div class="input-group mb-3">
+                        <input class="form-control bg-light" :style="uploadFailed ? 'color: #f74f78' : ''" readonly @click="!uploading && $refs.file.click()" type="text" v-model="uploadFileName"
+                               placeholder="MP4、MKV、FLV">
+                        <button class="btn btn-primary" type="button" @click="$refs.file.click()" :class="{ disabled : uploading }">
+                            <span v-if="uploading" class="spinner-border spinner-border-sm me-2" role="status" style="margin-bottom: 1px"></span>
+                            {{uploading ? uploadProgress : '选择文件'}}
+                        </button>
+                    </div>
+                    <div class="d-flex justify-content-between mb-3">
+                        <label class="h-100 me-2">
+                            <select class="form-select form-select h-100" v-model="form.category" style="width: 150px">
+                                <option value="" class="d-none">-请选择-</option>
+                                <option th:each="item : ${categories}" th:text="${item}"
+                                        th:value="${item}"></option>
+                            </select>
+                        </label>
+                        <input class="form-control" type="text" maxlength="64" v-model="form.title" placeholder="标题">
+                    </div>
+                    <textarea class="form-control mb-4" type="text" maxlength="300" v-model="form.description" style="height: 200px" placeholder="简介"></textarea>
+                </div>
+                <div class="col-12 col-md-4 mb-4">
+                    <cover-selector v-model="form.cover"></cover-selector>
+                </div>
+            </div>
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-primary" @click="post" :class="{ disabled : loading }">
+                    投稿
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script>
+    var app = new Vue({
+        el: 'main',
+        data: {
+            uploading: false,
+            uploadSize: 0,
+            uploadTotal: 0,
+            uploadProgress: '',
+            uploadFailed: false,
+            uploadFileName: '',
+            uploadFileURL: '',
+            form: {
+                cover: '',
+                title: '',
+                category: '',
+                content: '',
+                description: '',
+            },
+            loading: false
+        },
+        methods: {
+            setFile: function () {
+                const objFile = this.$refs.file.files[0];
+                if (objFile === undefined)
+                    return
+                this.uploading = true;
+                this.uploadFileName = objFile.name;
+                this.uploadTotal = objFile.size;
+                this.uploadFailed = false;
+
+                // 分片上传
+                const shardSize = 5 * 1024 * 1024; // 5MB一个分片
+                const shardCount = Math.ceil(objFile.size / shardSize);  //总片数
+                const uploadQueue = Array.from(Array(shardCount), (v, k) => {  // 上传队列
+                    const start = k * shardSize;
+                    const end = Math.min(objFile.size, start + shardSize)
+                    return {start, end};
+                });
+                let saveName = '';
+                const shardUpload = () => {
+                    const {start, end} = uploadQueue.shift(); // 提取一个分片
+                    const formData = new FormData();
+                    const lastOne = uploadQueue.length === 0;
+                    formData.append('file', objFile.slice(start, end), objFile.name);
+                    formData.append('lastOne', lastOne ? '1' : '0');
+                    formData.append('saveName', saveName);
+                    this.$http.post('https://media.ownfiles.cn/upload_video.php', formData, {
+                        progress: (event) => {
+                            const progress = (this.uploadSize + event.loaded) / this.uploadTotal;
+                            this.uploadProgress = progress < 1 ? Math.round(progress * 100) + "%" : "处理中";
+                        }
+                    }).then(({data}) => {
+                        if (data.code !== 0) {
+                            this.uploading = false;
+                            this.uploadFailed = true;
+                            message.add("上传失败", data.msg);
+                        } else if (!lastOne) {
+                            this.uploadSize += shardSize;
+                            saveName = data.data;
+                            shardUpload(); //继续上传下一个分片
+                        } else {
+                            this.uploading = false;
+                            this.uploadFileURL = data.data;
+                            console.log(this.uploadFileURL);
+                        }
+                    }, () => {
+                        this.uploading = false;
+                        this.uploadFailed = true;
+                        message.add("上传失败", "网络连接发生错误");
+                    });
+                }
+                shardUpload(); // 开始上传第一个分片
+            },
+            post: function () {
+                this.form.content = this.uploadFileURL;
+                message.confirm("提示", "确定要投稿吗？", () => {
+                    this.loading = true;
+                    this.$http.post('/api/video/create', this.form).then(({data}) => {
+                        if (data.code === 0) {
+                            window.location.href = "/video";
+                        } else {
+                            this.loading = false;
+                            message.add("投稿失败", data.msg);
+                        }
+                    }, () => {
+                        this.loading = false;
+                        message.add("投稿失败", "网络连接发生错误");
+                    });
+                });
+            }
+        },
+    });
+</script>
+</body>
+</html>

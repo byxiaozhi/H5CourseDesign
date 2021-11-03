@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>个人中心</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper d-flex flex-column">
+    <div class="container position-relative zindex-5 pb-4 mt-lg-7 mt-6">
+        <div class="row">
+            <th:block th:replace="components/account::Sidebar"/>
+            <div class="col-lg-9">
+                <div class="d-flex flex-column bg-light rounded-3 shadow-lg" style="height: 794px">
+                    <th:block th:if="${page} eq work" th:include="components/account::Work"/>
+                    <th:block th:if="${page} eq favorite" th:include="components/account::Favorite"/>
+                    <th:block th:if="${page} eq follow" th:include="components/account::Follow"/>
+                    <th:block th:if="${page} eq post" th:include="components/account::Community"/>
+                    <th:block th:if="${page} eq home" th:include="components/account::Home"/>
+                    <th:block th:if="${page} eq letter" th:include="components/account::Letter"/>
+                    <th:block th:if="${page} eq setting" th:include="components/account::Setting"/>
+                    <th:block th:if="${page} eq infomation" th:include="components/account::Infomation"/>
+                    <th:block th:if="${page} eq password" th:include="components/account::Password"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+</body>
+</html>

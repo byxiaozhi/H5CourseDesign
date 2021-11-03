@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>文章投稿</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper">
+    <div class="container position-relative zindex-5 mt-lg-7 mt-6">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-lg p-4">
+            <div class="d-flex align-items-center mb-3">
+                <label class="h-100 me-2">
+                    <select class="form-select form-select h-100" v-model="form.category" style="width: 150px">
+                        <option value="" class="d-none">-请选择-</option>
+                        <option th:each="item : ${categories}" th:text="${item}"
+                                th:value="${item}"></option>
+                    </select>
+                </label>
+                <input class="form-control rounded" type="text" maxlength="64" v-model="form.title" placeholder="标题">
+            </div>
+            <div class="mb-3">
+                <th:block th:replace="components/main::Tinymce"/>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-4 mb-4">
+                    <cover-selector v-model="form.cover"></cover-selector>
+                </div>
+                <div class="col mb-4">
+                    <textarea class="form-control h-100" type="text" maxlength="300" placeholder="简介" v-model="form.description" style="min-height: 100px"></textarea>
+                </div>
+            </div>
+            <div class="text-center">
+                <button class="btn btn-primary px-4" @click="post" :class="{ disabled : loading }">
+                    投稿
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script>
+    var app = new Vue({
+        el: 'main',
+        data: {
+            form: {
+                cover: '',
+                title: '',
+                category: '',
+                content: '',
+                description: '',
+            },
+            loading: false
+        },
+        methods: {
+            post: function () {
+                this.form.content = tinymce.activeEditor.getContent();
+                message.confirm("提示", "确定要投稿吗？", () => {
+                    this.loading = true;
+                    this.$http.post('/api/article/create', this.form).then(({data}) => {
+                        if (data.code === 0) {
+                            window.location.href = "/article";
+                        } else {
+                            this.loading = false;
+                            message.add("投稿失败", data.msg);
+                        }
+                    }, () => {
+                        this.loading = false;
+                        message.add("投稿失败", "网络连接发生错误");
+                    });
+                });
+            }
+        }
+    });
+</script>
+</body>
+</html>

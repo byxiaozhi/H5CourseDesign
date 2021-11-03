@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:v-bind="http://www.w3.org/1999/xhtml" lang="zh-cn">
+<head>
+    <title th:text="${title} + ' - 视频'"></title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper" v-cloak>
+    <div id="dplayer" class="container position-relative pb-4 mt-lg-7 mt-6">
+        <h2 class="mb-3" th:text="${title}"></h2>
+        <div class="w-100 d-flex justify-content-center h2 bg-light rounded-3 shadow-lg p-7" v-if="!start">还未开播...</div>
+        <div ref="dplayer" class="shadow-lg rounded-3"></div>
+    </div>
+    <div class="container position-relative mb-4">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-sm px-4 pt-1">
+            <div id="toolbar" class="row position-relative g-0 align-items-center mb-2">
+                <div class="col py-3">
+                    <div class="d-flex align-items-center ">
+                        <div class="d-flex align-items-center me-grid-gutter">
+                            <a class="d-block" th:href="@{/account/overview(uid=${userid})}">
+                                <img class="rounded-circle me-1" th:src="@{/avatar(email=${email})}" width="64" height="64">
+                            </a>
+                            <div class="ps-2">
+                                <h6 class="nav-heading mb-1"><a th:href="@{/account/overview(uid=${userid})}" th:text="${nickname}"></a></h6>
+                                <div class="text-nowrap">
+                                    <div class="meta-link fs-xs">
+                                        <i class="ai-calendar me-1 align-vertical"></i>
+                                        <th:block th:text="${createTime}"/>
+                                    </div>
+                                    <span class="meta-divider"></span>
+                                    <a class="meta-link fs-xs" href="#comment" data-scroll>
+                                        <i class="ai-message-square me-1 align-vertical"></i>
+                                        <th:block th:text="${commentCount}"/>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-outline-primary btn-sm me-2" @click="setFavorite" v-text="isFavorite ? '取消收藏' : '收藏'"></button>
+                </div>
+            </div>
+            <div class="mb-4" th:text="${description}" style="white-space: pre-wrap;"></div>
+        </div>
+    </div>
+    <div class="container position-relative mb-4">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-sm p-4">
+            <comment object="video" th:object-id="${id}"></comment>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script src="/vendor/dplayer/dist/hls.js"></script>
+<script src="/vendor/dplayer/dist/DPlayer.min.js"></script>
+<script th:inline="javascript">
+    var app = new Vue({
+        el: 'main',
+        data: {
+            start: true,
+            isFavorite: [[${isFavorite}]],
+            videoUrl: [[${videoUrl}]],
+            DPlayer: null,
+        },
+        methods: {
+            setFavorite: function () {
+                this.$http.post('/api/account/setFavorite', {favorite: !this.isFavorite, objectId: [[${id}]]}).then(({data}) => {
+                    if (data.code === 0)
+                        this.isFavorite = data.data;
+                    else
+                        message.add("收藏失败", data.msg);
+                });
+            },
+            create: function (live) {
+                this.DPlayer && this.DPlayer.destroy();
+                this.DPlayer = new DPlayer({
+                    container: this.$refs.dplayer,
+                    autoplay: true,
+                    live,
+                    video: {
+                        url: this.videoUrl,
+                        pic: ''
+                    }
+                });
+                this.DPlayer.on('resize', () => {
+                    const c = this.$refs.dplayer;
+                    if (c.offsetTop === 0)
+                        c.classList.remove("rounded-3");
+                    else
+                        c.classList.add("rounded-3");
+                });
+            },
+            destroy: function () {
+                this.DPlayer.destroy();
+            },
+            checked: function () {
+                var isM3U8 = new URL(this.videoUrl).pathname.slice(-5) === ".m3u8";
+                if (!isM3U8) {
+                    this.create(false);
+                } else {
+                    this.$http.get(this.videoUrl).then(() => {
+                        this.start = true;
+                        this.create(true);
+                    }, () => {
+                        this.start = false;
+                        setTimeout(() => this.checked(), 5000);
+                    })
+                }
+            }
+        },
+        mounted: function () {
+            this.checked();
+        }
+    });
+</script>
+</body>
+</html>

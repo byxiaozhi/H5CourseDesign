@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+
+<div th:fragment="Sidebar" class="sidebar col-lg-3 pt-lg-5">
+    <div class="px-4 pt-3 pt-lg-0 ps-lg-0 pe-lg-2 pe-xl-4 d-none d-lg-block" data-simplebar>
+        <th:block th:replace="components/community::SidebarBody"/>
+    </div>
+</div>
+
+<th:block th:fragment="SidebarBody">
+    <!-- Search-->
+    <div class="widget mb-5">
+        <h3 class="widget-title">搜索</h3>
+        <div class="input-group ps-1">
+            <i class="ai-search position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+            <input class="form-control rounded" th:value="${search}" type="text" placeholder="标题、内容" onkeydown="((e) => { e.keyCode === 13 && (window.location.href = `/community?search=${this.value}`)})(event)">
+        </div>
+    </div>
+    <!-- Categories-->
+    <div class="widget widget-categories mb-5">
+        <h3 class="widget-title">板块</h3>
+        <ul>
+            <li><a class="widget-link" th:classappend="${category == '全部' && tag == '全部'} ? 'active'" href="/community">全部</a>
+            </li>
+            <li th:each="item : ${categories}">
+                <a class="widget-link"
+                   th:classappend="${category == item} ? 'active'"
+                   th:href="@{/community(category=${item})}"
+                   th:text="${item}"></a>
+            </li>
+        </ul>
+    </div>
+    <!-- Tag cloud-->
+    <div class="widget mb-5">
+        <h3 class="widget-title pb-1">热门</h3>
+        <a th:each="item : ${tags}" class="btn-tag me-2 mb-2" th:href="@{/community(tag=${item})}" th:text="'#'+${item}"></a>
+    </div>
+</th:block>

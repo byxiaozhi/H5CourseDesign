@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>测试</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper d-flex flex-column">
+    <section class="container d-flex justify-content-center align-items-center pt-7 pb-4" style="flex: 1 0 auto;">
+        <div class="bg-light p-5 rounded-3 shadow-lg mt-3" style="width: 400px;">
+            <div class="signin-form-inner">
+                <h1 class="h2 text-center mb-4">注册</h1>
+                <p class="fs-ms text-muted mb-4 text-center">欢迎加入我们</p>
+                <form class="needs-validation" @submit.prevent="submit" novalidate>
+                    <div class="input-group mb-3">
+                        <i class="ai-hash position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="text" minlength="2" placeholder="昵称"
+                               v-model="form.nickname"
+                               required>
+                    </div>
+                    <div class="input-group mb-3">
+                        <i class="ai-mail position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="email" maxlength="64" placeholder="邮箱"
+                               v-model="form.email" required>
+                    </div>
+                    <div class="input-group mb-3">
+                        <i class="ai-lock position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="password" minlength="6" maxlength="64" placeholder="密码"
+                               v-model="form.password"
+                               required>
+                    </div>
+                    <div class="input-group mb-3">
+                        <i class="ai-lock position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="password" minlength="6" maxlength="64" placeholder="确认密码"
+                               v-model="form.password2"
+                               ref="password2" required>
+                    </div>
+                    <button class="btn btn-primary d-block w-100" :disabled="loading" type="submit">
+                        <i class="spinner-border spinner-border-sm" v-if="loading"></i>
+                        <span v-if="!loading">注册</span>
+                    </button>
+                    <p class="fs-sm pt-3 mb-0 text-center">
+                        已有账号？
+                        <a class='fw-medium' href='/signin'>立即登录</a></p>
+                </form>
+            </div>
+        </div>
+    </section>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script>
+    var app = new Vue({
+        el: 'main',
+        data: {
+            form: {
+                nickname: '',
+                email: '',
+                password: '',
+                password2: '',
+            },
+            loading: false
+        },
+        methods: {
+            submit: function (e) {
+                if (!e.target.checkValidity())
+                    return;
+                this.loading = true;
+                this.$http.post('/api/signup', this.form).then(({data}) => {
+                    if (data.code === 0) {
+                        window.location.href = "/";
+                    } else {
+                        this.loading = false;
+                        message.add("注册失败", data.msg);
+                    }
+                }, () => {
+                    this.loading = false;
+                    message.add("注册失败", "网络连接发生错误");
+                });
+            }
+        },
+        watch: {
+            form: {
+                handler(val) {
+                    this.$refs.password2.setCustomValidity(this.form.password === this.form.password2 ? "" : "确认密码不匹配");
+                },
+                deep: true
+            }
+        }
+    });
+</script>
+</body>
+</html>

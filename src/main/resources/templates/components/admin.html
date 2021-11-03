@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+
+
+<th:block th:fragment="Head">
+    <head>
+        <title>
+            <th:block th:if="${#request.requestURI=='/admin'}" th:text="'仪表盘'" />
+            <th:block th:if="${#request.requestURI=='/admin/community'}" th:text="'社区管理'" />
+            <th:block th:if="${#request.requestURI=='/admin/article'}" th:text="'文章管理'" />
+            <th:block th:if="${#request.requestURI=='/admin/video'}" th:text="'视频管理'" />
+            <th:block th:if="${#request.requestURI=='/admin/document'}" th:text="'文库管理'" />
+            <th:block th:if="${#request.requestURI=='/admin/user'}" th:text="'用户管理'" />
+            - 管理后台
+        </title>
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" media="screen" href="/css/bootstrap.min.css">
+        <link rel="stylesheet" media="screen" href="/css/admin.css">
+    </head>
+</th:block>
+
+<th:block th:fragment="Navbar">
+    <nav class="navbar navbar-dark bg-dark p-0 shadow">
+        <span class="navbar-brand px-3">管理后台</span>
+    </nav>
+    <div class="bg-light sidebar float-start">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${#request.requestURI=='/admin'}?'active'" href="/admin">
+                    仪表盘
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${#request.requestURI=='/admin/community'}?'active'" href="/admin/community">
+                    社区管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${#request.requestURI=='/admin/article'}?'active'" href="/admin/article">
+                    文章管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${#request.requestURI=='/admin/video'}?'active'" href="/admin/video">
+                    视频管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${#request.requestURI=='/admin/document'}?'active'" href="/admin/document">
+                    文库管理
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" th:classappend="${#request.requestURI=='/admin/user'}?'active'" href="/admin/user">
+                    用户管理
+                </a>
+            </li>
+        </ul>
+    </div>
+</th:block>
+
+<th:block th:fragment="Foot">
+    <script src="/js/bootstrap.min.js"></script>
+</th:block>

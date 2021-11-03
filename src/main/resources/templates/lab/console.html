@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>个人中心</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+    <link rel="stylesheet" media="screen" href="/vendor/codemirror/lib/codemirror.css">
+    <script src="/vendor/codemirror/lib/codemirror.js"></script>
+    <script src="/vendor/codemirror/mode/clike/clike.js"></script>
+    <style>
+        .CodeMirror {
+            padding: 0;
+            border: 1px solid rgb(223, 223, 235);
+            border-radius: 0.5rem;
+            min-height: calc(100vh - 320px);
+        }
+    </style>
+</head>
+<body style="background-color:#f7f7fc;">
+<div class="modal fade" id="console" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">运行</h4>
+                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="fs-sm">还在开发中...</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" type="button" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper d-flex flex-column">
+    <div class="container position-relative zindex-5 pb-4 mt-lg-7 mt-6">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-lg p-4">
+            <div class="mb-2">
+                <div class="float-start">
+                    <button type="button" class="btn btn-outline-secondary btn-sm"><i class="ai-corner-up-left"></i></button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm"><i class="ai-corner-up-right"></i></button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm">格式化</button>
+                </div>
+                <div class="float-end">
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#console">运行</button>
+                </div>
+            </div>
+            <div>
+                <textarea ref="code">
+#include <iostream>
+using namespace std;
+
+int main() {
+    cout << "Hello World!" << endl;
+    return 0;
+}
+</textarea>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script>
+    var app = new Vue({
+        el: 'main',
+        data: {},
+        methods: {},
+        mounted: function () {
+            this.editor = CodeMirror.fromTextArea(this.$refs.code, {
+                mode: "text/x-c++src",
+                lineNumbers: true,
+            });
+        }
+    });
+
+
+</script>
+</body>
+</html>

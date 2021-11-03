@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+
+<div th:fragment="Sidebar" class="col-lg-3 mb-3 mb-lg-0">
+    <div class="bg-light rounded-3 shadow-lg">
+        <div class="px-4 py-4 mb-1 text-center">
+            <img class="navbar-tool-icon-box-img rounded-circle" style="width: 80px; height: 80px"
+                 th:src="@{/avatar(email=${session.user.email})}">
+            <h6 class="mb-0 pt-1" th:text="${session.user.nickname}"></h6>
+            <span class="text-muted fs-sm" th:text="${session.user.email}"></span>
+        </div>
+        <div class="d-lg-none px-4 pb-4 text-center">
+            <a class="btn btn-outline-primary px-5 mb-2" href="#account-menu" data-bs-toggle="collapse">
+                <i class="ai-menu"></i>
+            </a>
+        </div>
+        <div class="d-lg-block collapse pb-2" id="account-menu">
+            <h3 class="d-block bg-secondary fs-sm fw-semibold text-muted mb-0 px-4 py-3">内容</h3>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3" th:classappend="${page == 'home'} ? 'active'"
+               href="/account/home">
+                <i class="me-2 ai-home"></i>
+                主页
+            </a>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3"
+               th:classappend="${page == 'letter'} ? 'active'" href="/account/letter">
+                <i class="me-2 ai-mail"></i>
+                私信
+            </a>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3" th:classappend="${page == 'post'} ? 'active'"
+               href="/account/post">
+                <i class="me-2 ai-message-square"></i>
+                话题
+            </a>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3"
+               th:classappend="${page == 'follow'} ? 'active'" href="/account/follow">
+                <i class="me-2 ai-rss"></i>
+                关注
+            </a>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3"
+               th:classappend="${page == 'favorite'} ? 'active'" href="/account/favorite">
+                <i class="me-2 ai-star"></i>
+                收藏
+            </a>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3" th:classappend="${page == 'work'} ? 'active'"
+               href="/account/work">
+                <i class="me-2 ai-feather"></i>
+                创作
+            </a>
+            <h3 class="d-block bg-secondary fs-sm fw-semibold text-muted mb-0 px-4 py-3">设置</h3>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3"
+               th:classappend="${page == 'setting'} ? 'active'" href="/account/setting">
+                偏好设置
+            </a>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3"
+               th:classappend="${page == 'infomation'} ? 'active'" href="/account/infomation">
+                基本信息
+            </a>
+            <a class="d-flex align-items-center nav-link-style px-4 py-3"
+               th:classappend="${page == 'password'} ? 'active'" href="/account/password">
+                修改密码
+            </a>
+        </div>
+    </div>
+</div>
+
+<th:block th:fragment="Work">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" href="#article1" data-bs-toggle="tab" role="tab">文章</a></li>
+            <li class="nav-item"><a class="nav-link" href="#video1" data-bs-toggle="tab" role="tab">视频</a></li>
+            <li class="nav-item"><a class="nav-link" href="#document1" data-bs-toggle="tab" role="tab">文库</a></li>
+        </ul>
+    </div>
+    <div id="work" class="card-body" style="height: 0" data-simplebar>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="article1" role="tabpanel">
+                <div class="d-flex justify-content-between mb-4">
+                    <div class="input-group ps-1 inline me-4">
+                        <i class="ai-search position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="text" placeholder="标题、简介、内容">
+                    </div>
+                    <a href="/article/create" class="btn btn-primary"><i class="ai-share me-1"></i>文章投稿</a>
+                </div>
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="(item) in article.articles">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0"
+                               :href="'/article/view?id=' + item.id"><b v-text="item.title"></b></a>
+                            <span class="text-break" v-text="item.description"></span>
+                        </div>
+                        <div class="ms-4 text-nowrap">
+                            <button class="btn btn-secondary btn-sm mb-1">编辑</button>
+                            <button class="btn btn-secondary btn-sm">删除</button>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="article.articles.length===0" class="d-flex justify-content-center">列表为空</div>
+                <pagination :pages="article.pages" :now-page="article.nowPage"
+                            :on-change="changeArticlePage"></pagination>
+            </div>
+            <div class="tab-pane fade" id="video1" role="tabpanel">
+                <div class="d-flex justify-content-between mb-4">
+                    <div class="input-group ps-1 inline me-4">
+                        <i class="ai-search position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="text" placeholder="标题、简介">
+                    </div>
+                    <a href="/video/create" class="btn btn-primary"><i class="ai-share me-1"></i>视频投稿</a>
+                </div>
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="(item) in video.videos">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/video/view?id=' + item.id"><b
+                                    v-text="item.title"></b></a>
+                            <span class="text-break" v-text="item.description"></span>
+                        </div>
+                        <div class="ms-4 text-nowrap">
+                            <button class="btn btn-secondary btn-sm">编辑</button>
+                            <button class="btn btn-secondary btn-sm">删除</button>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="video.videos.length===0" class="d-flex justify-content-center">列表为空</div>
+                <pagination :pages="video.pages" :now-page="video.nowPage" :on-change="changeVideoPage"></pagination>
+            </div>
+            <div class="tab-pane fade" id="document1" role="tabpanel">
+                <div class="d-flex justify-content-between mb-4">
+                    <div class="input-group ps-1 inline me-4">
+                        <i class="ai-search position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="text" placeholder="标题、简介">
+                    </div>
+                    <a href="/document/create" class="btn btn-primary"><i class="ai-share me-1"></i>文库投稿</a>
+                </div>
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="(item) in document.documents">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/document/view?id=' + item.id"><b
+                                    v-text="item.title"></b></a>
+                            <span class="text-break" v-text="item.description"></span>
+                        </div>
+                        <div class="ms-4 text-nowrap">
+                            <button class="btn btn-secondary btn-sm">编辑</button>
+                            <button class="btn btn-secondary btn-sm">删除</button>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="document.documents.length===0" class="d-flex justify-content-center">列表为空</div>
+                <pagination :pages="document.pages" :now-page="document.nowPage"
+                            :on-change="changeDocumentPage"></pagination>
+            </div>
+        </div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        var app = new Vue({
+            el: '#work',
+            data: {
+                article: {
+                    count: 0,
+                    pages: [],
+                    nowPage: 1,
+                    maxPage: 1,
+                    articles: []
+                },
+                video: {
+                    count: 0,
+                    pages: [],
+                    nowPage: 1,
+                    maxPage: 1,
+                    videos: []
+                },
+                document: {
+                    count: 0,
+                    pages: [],
+                    nowPage: 1,
+                    maxPage: 1,
+                    documents: []
+                }
+            },
+            methods: {
+                loadArticle: function () {
+                    this.$http.get('/api/article/getArticleList', {
+                        params: {
+                            userId,
+                            page: this.article.nowPage
+                        }
+                    }).then(({data}) => {
+                        this.article.count = data.data.count;
+                        this.article.pages = data.data.pages;
+                        this.article.nowPage = data.data.nowPage;
+                        this.article.maxPage = data.data.maxPage;
+                        this.article.articles = data.data.articles;
+                    }, () => {
+
+                    });
+                },
+                loadVideo: function () {
+                    this.$http.get('/api/video/getVideoList', {
+                        params: {
+                            userId,
+                            page: this.video.nowPage
+                        }
+                    }).then(({data}) => {
+                        this.video.count = data.data.count;
+                        this.video.pages = data.data.pages;
+                        this.video.nowPage = data.data.nowPage;
+                        this.video.maxPage = data.data.maxPage;
+                        this.video.videos = data.data.videos;
+                    }, () => {
+
+                    });
+                },
+                loadDocument: function () {
+                    this.$http.get('/api/document/getDocumentList', {
+                        params: {
+                            userId,
+                            page: this.document.nowPage
+                        }
+                    }).then(({data}) => {
+                        this.document.count = data.data.count;
+                        this.document.pages = data.data.pages;
+                        this.document.nowPage = data.data.nowPage;
+                        this.document.maxPage = data.data.maxPage;
+                        this.document.documents = data.data.documents;
+                    }, () => {
+
+                    });
+                },
+                changeArticlePage: function (page) {
+                    this.article.nowPage = Math.min(this.article.maxPage, Math.max(1, page));
+                    this.loadArticle();
+                },
+                changeVideoPage: function (page) {
+                    this.video.nowPage = Math.min(this.video.maxPage, Math.max(1, page));
+                    this.loadVideo();
+                },
+                changeDocumentPage: function (page) {
+                    this.document.nowPage = Math.min(this.document.maxPage, Math.max(1, page));
+                    this.loadDocument();
+                },
+            },
+            mounted: function () {
+                this.loadArticle();
+                this.loadVideo();
+                this.loadDocument();
+            }
+        });
+    </script>
+</th:block>
+
+<th:block th:fragment="Favorite">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" href="#community2" data-bs-toggle="tab" role="tab">话题</a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="#article2" data-bs-toggle="tab" role="tab">文章</a></li>
+            <li class="nav-item"><a class="nav-link" href="#video2" data-bs-toggle="tab" role="tab">视频</a></li>
+            <li class="nav-item"><a class="nav-link" href="#document2" data-bs-toggle="tab" role="tab">文库</a></li>
+        </ul>
+    </div>
+    <div id="favorite" class="card-body">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="community2" role="tabpanel">
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="item in community">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/community/view?id=' + item.objectId"><b
+                                    v-text="item.title"></b></a>
+                        </div>
+                        <div>
+                            <a class="h6 widget-link text-muted mb-0"
+                               :href="'/account/overview?uid=' + item.authorId"><b v-text="item.author"></b></a>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="community.length===0"
+                     class="d-flex justify-content-center">列表为空
+                </div>
+            </div>
+            <div class="tab-pane fade" id="article2" role="tabpanel">
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="item in article">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/article/view?id=' + item.objectId"><b
+                                    v-text="item.title"></b></a>
+                        </div>
+                        <div>
+                            <a class="h6 widget-link text-muted mb-0"
+                               :href="'/account/overview?uid=' + item.authorId"><b v-text="item.author"></b></a>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="article.length===0" class="d-flex justify-content-center">
+                    列表为空
+                </div>
+            </div>
+            <div class="tab-pane fade" id="video2" role="tabpanel">
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="item in video">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/video/view?id=' + item.objectId"><b
+                                    v-text="item.title"></b></a>
+                        </div>
+                        <div>
+                            <a class="h6 widget-link text-muted mb-0"
+                               :href="'/account/overview?uid=' + item.authorId"><b v-text="item.author"></b></a>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="video.length===0" class="d-flex justify-content-center">
+                    列表为空
+                </div>
+            </div>
+            <div class="tab-pane fade" id="document2" role="tabpanel">
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="item in document">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/document/view?id=' + item.objectId"><b
+                                    v-text="item.title"></b></a>
+                        </div>
+                        <div>
+                            <a class="h6 widget-link text-muted mb-0"
+                               :href="'/account/overview?uid=' + item.authorId"><b v-text="item.author"></b></a>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="document.length===0"
+                     class="d-flex justify-content-center">列表为空
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        var app = new Vue({
+            el: '#favorite',
+            data: {
+                community: [],
+                article: [],
+                video: [],
+                document: [],
+            },
+            methods: {
+                loadFollow: function () {
+                    this.$http.get('/api/account/getFavorites').then(({data}) => {
+                        if (data.code === 0) {
+                            const d = data.data;
+                            this.community = d.filter(t => t.object === 'community');
+                            this.article = d.filter(t => t.object === 'article');
+                            this.video = d.filter(t => t.object === 'video');
+                            this.document = d.filter(t => t.object === 'document');
+                        }
+                    });
+                },
+            },
+            mounted: function () {
+                this.loadFollow();
+            }
+        });
+    </script>
+</th:block>
+
+<th:block th:fragment="Follow">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" href="#myFollow" data-bs-toggle="tab" role="tab">我的关注</a>
+            </li>
+            <li class="nav-item"><a class="nav-link" href="#followMe" data-bs-toggle="tab" role="tab">关注我的</a></li>
+        </ul>
+    </div>
+    <div id="follow" class="card-body">
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="myFollow" role="tabpanel">
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="(item) in myFollow">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/account/overview?uid=' + item.toUserId"><b
+                                    v-text="item.toUserNickname"></b></a>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="myFollow.length===0" class="d-flex justify-content-center">列表为空</div>
+            </div>
+            <div class="tab-pane fade" id="followMe" role="tabpanel">
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="(item) in followMe">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/account/overview?uid=' + item.fromUserId"><b
+                                    v-text="item.fromUserNickname"></b></a>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="followMe.length===0" class="d-flex justify-content-center">列表为空</div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        var app = new Vue({
+            el: '#follow',
+            data: {
+                myFollow: [],
+                followMe: []
+            },
+            methods: {
+                loadFollow: function () {
+                    this.$http.get('/api/account/getFollow', {params: {type: 0}}).then(({data}) => {
+                        if (data.code === 0)
+                            this.myFollow = data.data;
+                    });
+                    this.$http.get('/api/account/getFollow', {params: {type: 1}}).then(({data}) => {
+                        if (data.code === 0)
+                            this.followMe = data.data;
+                    });
+                },
+            },
+            mounted: function () {
+                this.loadFollow();
+            }
+        });
+    </script>
+</th:block>
+
+<th:block th:fragment="Community">
+    <div class="card-header">
+        <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <li class="nav-item"><a class="nav-link active" href="#post" data-bs-toggle="tab" role="tab">我的话题</a></li>
+            <li class="nav-item"><a class="nav-link" href="#comment" data-bs-toggle="tab" role="tab">我的回复</a></li>
+        </ul>
+    </div>
+    <div id="community" class="card-body" style="height: 0" data-simplebar>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="post" role="tabpanel">
+                <div class="d-flex justify-content-between mb-4">
+                    <div class="input-group ps-1 inline me-4">
+                        <i class="ai-search position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="text" placeholder="标题、内容">
+                    </div>
+                    <a href="/community/create" class="btn btn-primary">发表话题</a>
+                </div>
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="(item) in talk.talks">
+                        <div class="overflow-hidden">
+                            <a class="h6 widget-link mb-0" :href="'/community/view?id=' + item.id"><b
+                                    v-text="item.title"></b></a>
+                            <span class="text-break" v-text="item.content"></span>
+                        </div>
+                        <div class="ms-4 text-nowrap">
+                            <button class="btn btn-secondary btn-sm mb-1">编辑</button>
+                            <button class="btn btn-secondary btn-sm" @click="deleteTalk(item.id)">删除</button>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="talk.talks.length===0" class="d-flex justify-content-center">列表为空</div>
+                <pagination :pages="talk.pages" :now-page="talk.nowPage" :on-change="changeTalkPage"></pagination>
+            </div>
+            <div class="tab-pane fade" id="comment" role="tabpanel">
+                <ul class="list-group mb-4">
+                    <li class="list-group-item d-flex justify-content-between align-items-center" style="min-width: 0"
+                        v-for="(item) in comment.comments">
+                        <div class="overflow-hidden mb-2">
+                            <a class="h6 widget-link mb-0" :href="'/community/view?id=' + item.id"><b
+                                    v-text="item.title"></b></a>
+                            <span class="text-break" style="white-space: pre-wrap; !important;"
+                                  v-text="item.content"></span>
+                        </div>
+                        <div class="ms-4 text-nowrap">
+                            <button class="btn btn-secondary btn-sm">删除</button>
+                        </div>
+                    </li>
+                </ul>
+                <div v-if="comment.comments.length===0" class="d-flex justify-content-center">列表为空</div>
+                <pagination :pages="comment.pages" :now-page="comment.nowPage"
+                            :on-change="changeCommentPage"></pagination>
+            </div>
+        </div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        var app = new Vue({
+            el: '#community',
+            data: {
+                talk: {
+                    count: 0,
+                    pages: [],
+                    nowPage: 1,
+                    maxPage: 1,
+                    talks: []
+                },
+                comment: {
+                    count: 0,
+                    pages: [],
+                    nowPage: 1,
+                    maxPage: 1,
+                    comments: []
+                }
+            },
+            methods: {
+                loadTalk: function () {
+                    this.$http.get('/api/community/getTalkList', {
+                        params: {
+                            userId,
+                            page: this.talk.nowPage
+                        }
+                    }).then(({data}) => {
+                        this.talk.count = data.data.count;
+                        this.talk.pages = data.data.pages;
+                        this.talk.nowPage = data.data.nowPage;
+                        this.talk.maxPage = data.data.maxPage;
+                        this.talk.talks = data.data.talks;
+                    });
+                },
+                loadComment: function () {
+                    this.$http.get('/api/comment/get', {
+                        params: {
+                            userId,
+                            page: this.comment.nowPage
+                        }
+                    }).then(({data}) => {
+                        this.comment.count = data.data.count;
+                        this.comment.pages = data.data.pages;
+                        this.comment.nowPage = data.data.nowPage;
+                        this.comment.maxPage = data.data.maxPage;
+                        this.comment.comments = data.data.comment;
+                    });
+                },
+                changeTalkPage: function (page) {
+                    this.talk.nowPage = Math.min(this.talk.maxPage, Math.max(1, page));
+                    this.loadTalk();
+                },
+                changeCommentPage: function (page) {
+                    this.comment.nowPage = Math.min(this.comment.maxPage, Math.max(1, page));
+                    this.loadComment();
+                },
+                deleteTalk: function (id) {
+                    message.confirm("提示", "确定要删除吗？", () => {
+                        this.$http.post('/api/community/deleteTalk', {id}).then(({data}) => {
+                            this.loadTalk();
+                        });
+                    });
+                }
+            },
+            mounted: function () {
+                this.loadTalk();
+                this.loadComment();
+            }
+        });
+    </script>
+</th:block>
+
+<th:block th:fragment="Letter">
+    <div id="letter" class="card-body p-0" v-cloak>
+        <div class="row h-100">
+            <div class="col-4 pe-0 h-100 border-end">
+                <div class="py-3 text-center border-bottom">消息列表</div>
+                <div style="height: calc(100% - 80px)" data-simplebar>
+                    <ul class="list-group rounded-0">
+                        <li v-for="item in users" class="btn rounded-0 border-0 border-bottom list-group-item"
+                            @click="changeUser(item.id, item.nickname)"
+                            :class="{'bg-secondary': item.id == toUserId}" style="text-align: left">
+                            <div class="fs-6 overflow-hidden text-nowrap" v-text="item.nickname"></div>
+                            <div class="text-muted fs-ms overflow-hidden text-nowrap" style="text-overflow: ellipsis;"
+                                 v-text="item.content"></div>
+                        </li>
+                    </ul>
+                    <div v-if="users.length===0" class="d-flex justify-content-center mt-4">列表为空</div>
+                </div>
+
+            </div>
+            <div class="col-8 ps-0">
+                <div class="py-3 text-center border-bottom" v-text="toUserNickname"></div>
+                <div style="height: 528px" data-simplebar>
+                    <ul class="list-group rounded-0">
+                        <li v-for="item in contents[toUserId]" class="rounded-0 border-0 list-group-item"
+                            :style="item.me ? 'text-align: right' : 'text-align: left'">
+                            <div class="text-muted fs-sm ps-1" v-text="item.fromUserNickname"></div>
+                            <div class="fs-6 bg-secondary p-3 rounded-2 text-break"
+                                 style="max-width: 80%; white-space: pre-wrap;"
+                                 :class="item.me ? 'float-end':'float-start'"
+                                 v-text="item.content"></div>
+                        </li>
+                    </ul>
+                </div>
+                <div class="border-top" style="height: 150px">
+                    <textarea placeholder="" style="height: 100%; resize: none;"
+                              class="form-control rounded-0 border-0 shadow-none" v-model="content"></textarea>
+                </div>
+                <div class="border-top d-flex align-items-center justify-content-end pe-3" style="height: 60px">
+                    <button class="btn btn-primary btn-sm float-end px-4" @click="sendLetter"
+                            :class="{disabled: toUserId === 0}">发送
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        const scrollElement = document.querySelectorAll('.simplebar-content-wrapper')[1];
+        var app = new Vue({
+            el: '#letter',
+            data: {
+                refreshTimer: null,
+                toUserId: 0,
+                toUserNickname: '-',
+                content: '',
+                letters: [],
+                contents: {},
+                users: [],
+                loadingList: false,
+            },
+            methods: {
+                loadList: function () {
+                    if (this.loadingList)
+                        return;
+                    this.loadingList = true;
+                    this.$http.get("/api/account/getLetterList", {params: {startId: this.letters.length > 0 ? this.letters[0].id : 0}}).then(({data}) => {
+                        this.contents = {};
+                        this.users = [];
+                        var scroll = false;
+                        if (data.code === 0) {
+                            const length = data.data.length;
+                            this.letters = [...data.data, ...this.letters];
+                            this.letters.forEach((item, index) => {
+                                let id, nickname;
+                                if (item.fromUserId === userId) {
+                                    id = item.toUserId;
+                                    nickname = item.toUserNickname;
+                                } else {
+                                    id = item.fromUserId;
+                                    nickname = item.fromUserNickname;
+                                }
+                                if (index < length && id === this.toUserId) {
+                                    scroll = true;
+                                }
+                                if (this.contents[id] === undefined) {
+                                    this.contents = {[id]: [], ...this.contents};
+                                    this.users.push({id, nickname, content: item.content});
+                                }
+                                this.contents[id].unshift({me: item.fromUserId === userId, ...item});
+                            });
+                        }
+                        if (scroll) {
+                            setTimeout(() => {
+                                const scrollElement = document.querySelectorAll('.simplebar-content-wrapper')[1];
+                                scrollElement && scrollElement.scroll({
+                                    top: scrollElement.scrollHeight,
+                                    left: 0,
+                                    behavior: 'smooth'
+                                });
+                            }, 0);
+                        }
+                        if (this.users.length > 0 && this.toUserId === 0) {
+                            this.changeUser(this.users[0].id, this.users[0].nickname)
+                        }
+                        this.loadingList = false;
+                        this.setRefreshTimer(1000);
+                    }, () => {
+                        this.loadingList = false;
+                        this.setRefreshTimer(1000)
+                    });
+                },
+                changeUser: function (toUserId, nickName) {
+                    if (toUserId === 0 || toUserId === this.toUserId)
+                        return;
+                    this.toUserId = toUserId;
+                    this.toUserNickname = nickName;
+                    nickName === undefined && this.$http.get("/api/account/overview", {params: {uid: toUserId}}).then(({data}) => {
+                        this.toUserNickname = data.data.nickname;
+                    });
+                    setTimeout(() => {
+                        const scrollElement = document.querySelectorAll('.simplebar-content-wrapper')[1];
+                        scrollElement && scrollElement.scroll({top: scrollElement.scrollHeight, left: 0});
+                    }, 0);
+
+                },
+                sendLetter: function () {
+                    this.$http.post("/api/account/sendLetterList", {
+                        toUserId: this.toUserId,
+                        content: this.content
+                    }).then(({data}) => {
+                        if (data.code === 0)
+                            this.setRefreshTimer(0);
+                    });
+                    this.content = '';
+                },
+                setRefreshTimer: function (timeout) {
+                    clearTimeout(this.refreshTimer);
+                    this.refreshTimer = setTimeout(() => this.loadList(), timeout);
+                }
+            },
+            mounted: function () {
+                this.changeUser(parseInt(getUrlKey("to") || 0));
+                this.loadList();
+            }
+        });
+    </script>
+</th:block>
+
+<th:block th:fragment="Home">
+    <div id="home" class="card-body p-5" v-cloak>
+
+        <div v-if="!isOpenLive" class="row d-flex">
+            <div class="col-12 col-md-6 mb-4">
+                <cover-selector v-model="form.cover"></cover-selector>
+            </div>
+            <div class="col d-flex flex-column">
+                <div class="input-group mb-3">
+                    <label class="input-group-text">
+                        直播间标题
+                    </label>
+                    <input type="text" v-model="form.title" class="form-control bg-light"/>
+                </div>
+                <div class="input-group mb-3" style="flex: 1">
+                    <label class="input-group-text">
+                        直播间简介
+                    </label>
+                    <textarea type="text" v-model="form.description" class="form-control bg-light"></textarea>
+                </div>
+                <button class="btn btn-outline-primary mb-4" @click="openLive">开启直播间</button>
+            </div>
+        </div>
+
+        <div v-if="isOpenLive">
+            <div class="input-group mb-3">
+                <label class="input-group-text">
+                    直播间地址
+                </label>
+                <input type="text" class="form-control bg-light" v-model="room" readonly/>
+            </div>
+            <div class="input-group mb-3">
+                <label class="input-group-text">
+                    串流地址
+                </label>
+                <input type="text" class="form-control bg-light" v-model="rtmp" readonly/>
+            </div>
+            <button class="btn btn-primary mb-4" @click="closeLive">关闭直播间</button>
+        </div>
+
+        <div class="dropdown-divider mb-4"></div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        window.onload = () => {
+            var app = new Vue({
+                el: '#home',
+                data: {
+                    isOpenLive: false,
+                    room: '',
+                    rtmp: '',
+                    form: {
+                        cover: '',
+                        title: '',
+                        description: '',
+                    },
+                },
+                methods: {
+                    openLive: function () {
+                        this.$http.post('/api/video/openLive', this.form).then(({data}) => {
+                            data.code === 0 && this.showLive(data.data.roomId, data.data.rtmp);
+                            data.code !== 0 && message.add("开启失败", data.msg);
+                        });
+                    },
+                    closeLive: function () {
+                        this.$http.post('/api/video/closeLive').then(({data}) => {
+                            this.isOpenLive = data.code !== 0;
+                        });
+                    },
+                    loadLive: function () {
+                        this.$http.post('/api/video/getLive').then(({data}) => {
+                            data.code === 0 && this.showLive(data.data.roomId, data.data.rtmp);
+                        });
+                    },
+                    showLive: function (roomId, rtmp) {
+                        this.isOpenLive = true;
+                        this.room = window.location.protocol + `//${window.location.host}/video/view?id=${roomId}`;
+                        this.rtmp = rtmp;
+                    }
+                },
+                mounted: function () {
+                    this.loadLive();
+                }
+            });
+
+        }
+
+    </script>
+</th:block>
+
+<th:block th:fragment="Setting">
+    <div id="setting" class="card-body p-5">
+        <div class="form-check form-switch mb-4">
+            <label class="form-check-label my-1" for="customSwitch2">暗黑模式</label>
+            <input type="checkbox" class="form-check-input" id="customSwitch3" @click="switchDarkMode"
+                   v-model="darkMode">
+        </div>
+        <div class="dropdown-divider mb-4"></div>
+        <div class="form-check form-switch mb-4">
+            <label class="form-check-label my-1" for="customSwitch1">关注对象更新时通知</label>
+            <input type="checkbox" class="form-check-input" id="customSwitch1">
+        </div>
+        <div class="form-check form-switch mb-4">
+            <label class="form-check-label my-1" for="customSwitch2">收到私信时通知</label>
+            <input type="checkbox" class="form-check-input" id="customSwitch2">
+        </div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        var app = new Vue({
+            el: '#setting',
+            data: {
+                darkMode: isDarkMode()
+            },
+            methods: {
+                switchDarkMode: function () {
+                    switchDarkMode(!this.darkMode);
+                    this.darkMode = isDarkMode();
+                },
+            }
+        });
+    </script>
+</th:block>
+
+<th:block th:fragment="Infomation">
+    <div id="information" class="card-body p-5">
+        <div style="width: 400px;">
+            <div class="input-group mb-3">
+                <label class="input-group-text">
+                    昵称
+                </label>
+                <input type="text" class="form-control" v-model="information.nickname"/>
+            </div>
+            <div class="input-group mb-3">
+                <label class="input-group-text">
+                    邮箱
+                </label>
+                <input type="text" class="form-control" v-model="information.email" disabled/>
+            </div>
+            <div class="input-group mb-3">
+                <label class="input-group-text">
+                    个性签名
+                </label>
+                <input type="text" class="form-control" v-model="information.signature"/>
+            </div>
+            <button type="button" class="btn btn-primary" @click="setInformation">修改信息</button>
+        </div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        var app = new Vue({
+            el: '#information',
+            data: {
+                information: {
+                    nickname: '',
+                    email: '',
+                    signature: '',
+                }
+            },
+            methods: {
+                loadInfomation: function () {
+                    this.$http.get('/api/account/getInformation').then(({data}) => {
+                        this.information = data.data;
+                    });
+                },
+                setInformation: function () {
+                    this.$http.post('/api/account/setInformation', this.information).then(({data}) => {
+                        if (data.code === 0)
+                            message.add("修改成功", "修改基本信息成功");
+                        else
+                            message.add("修改失败", data.msg);
+                    });
+                }
+            },
+            mounted: function () {
+                this.loadInfomation();
+            }
+        });
+    </script>
+</th:block>
+
+<th:block th:fragment="Password">
+    <div id="changePassword" class="card-body p-5">
+        <div style="width: 400px;">
+            <div class="input-group mb-3">
+                <label for="passwordOld" class="input-group-text">
+                    原密码
+                </label>
+                <input id="passwordOld" type="password" v-model="form.passwordOld" class="form-control"/>
+            </div>
+            <div class="input-group mb-3">
+                <label for="passwordNew" class="input-group-text">
+                    新密码
+                </label>
+                <input id="passwordNew" type="password" v-model="form.passwordNew" class="form-control"/>
+            </div>
+            <div class="input-group mb-3">
+                <label for="passwordNew2" class="input-group-text">
+                    确认密码
+                </label>
+                <input id="passwordNew2" type="password" v-model="form.passwordNew2" class="form-control"/>
+            </div>
+            <button type="button" class="btn btn-primary" @click="changePassword">修改密码</button>
+        </div>
+    </div>
+    <script>
+        const userId = [[${session.user.id}]];
+        var app = new Vue({
+            el: '#changePassword',
+            data: {
+                form: {
+                    passwordOld: '',
+                    passwordNew: '',
+                    passwordNew2: '',
+                }
+            },
+            methods: {
+                changePassword: function () {
+                    this.$http.post('/api/account/changePassword', this.form).then(({data}) => {
+                        if (data.code === 0)
+                            message.add("修改成功", "修改密码成功");
+                        else
+                            message.add("修改失败", data.msg);
+                    });
+                }
+            }
+        });
+    </script>
+</th:block>
+

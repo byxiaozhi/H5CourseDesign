@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>测试</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+    <style>
+        .parallax-layer {
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            position: relative;
+            display: block;
+            left: 0;
+            top: 0;
+        }
+    </style>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper d-flex flex-column">
+    <div class="container d-flex flex-column justify-content-center pt-5 mt-n6" style="flex: 1 0 auto;">
+        <div class="align-items-center py-3 mt-5">
+            <div class="pt-2 text-center">
+                <h1 class="display-4 text-dark pb-2">Hello World!</h1>
+                <p class="h4 fw-light text-dark opacity-70 line-height-base">&gt;&gt; Welcome to SLDA</p>
+            </div>
+        </div>
+        <!--<div class="parallax d-lg-block mt-6" style="
+            display: none;
+            transform-style: preserve-3d;
+            backface-visibility: hidden; pointer-events: none;
+            position: absolute;
+            left: 10%;
+            right: 10%;"
+        >
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.48">
+                <img src="img/parallax/android.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.24">
+                <img src="img/parallax/cpp.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.47">
+                <img src="img/parallax/css.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.23">
+                <img src="img/parallax/h5.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.6">
+                <img src="img/parallax/java.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.22">
+                <img src="img/parallax/linux.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.65">
+                <img src="img/parallax/nodejs.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.61">
+                <img src="img/parallax/ps.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.41">
+                <img src="img/parallax/python.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.93">
+                <img src="img/parallax/pytouch.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.53">
+                <img src="img/parallax/react.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.23">
+                <img src="img/parallax/spring.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.55">
+                <img src="img/parallax/st.png" alt="Layer"/>
+            </div>
+            <div class="parallax-layer" style="transform: translate3d(0px, 0px, 0px);" data-depth="0.81">
+                <img src="img/parallax/vue.png" alt="Layer"/>
+            </div>
+        </div>-->
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+</body>
+</html>

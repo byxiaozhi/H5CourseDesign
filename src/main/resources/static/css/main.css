@@ -1,0 +1,42 @@
+/* main */
+
+.fade-enter-active, .fade-leave-active {
+    transition: opacity .3s ease;
+}
+
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+}
+
+.list-enter-active, .list-leave-active {
+    transition: all .3s ease;
+}
+
+.list-enter, .list-leave-to {
+    opacity: 0;
+    transform: translateY(-30px);
+}
+
+[v-cloak] {
+    visibility: hidden;
+}
+
+.cover-selector {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+}
+.cover-selector .bg-hide {
+    opacity: 0;
+    transition: opacity 0.25s ease-in-out;
+}
+.cover-selector:hover .bg-hide {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.nav-heading {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

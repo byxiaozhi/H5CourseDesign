@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>用户</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper">
+    <div class="container position-relative zindex-5 pb-4 mt-lg-7 mt-6">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-lg p-4">
+            <div class="px-4 mt-2 mb-4 text-center">
+                <img class="navbar-tool-icon-box-img rounded-circle" style="width: 80px; height: 80px"
+                     th:src="@{/avatar(email=${user.email})}">
+                <h6 class="mb-0 pt-1" th:text="${user.nickname}"></h6>
+                <span class="text-muted fs-sm" th:text="${user.getSignature()}"></span>
+            </div>
+            <div class="px-4 mb-2 text-center" v-cloak>
+                <button type="button" class="btn btn-outline-primary btn-sm mx-2" @click="follow" v-model="isFollow"
+                        v-text="isFollow?'取消关注':'关注'"></button>
+                <a type="button" class="btn btn-outline-primary btn-sm mx-2"
+                   th:href="@{/account/letter(to=${user.id})}">私信</a>
+            </div>
+        </div>
+    </div>
+    <div class="container position-relative zindex-5">
+        <div class="d-flex flex-column h-100 bg-light rounded-3 shadow-lg">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                    <li class="nav-item"><a class="nav-link active" href="#community" data-bs-toggle="tab"
+                                            role="tab">话题</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#article" data-bs-toggle="tab" role="tab">文章</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#video" data-bs-toggle="tab" role="tab">视频</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#document" data-bs-toggle="tab" role="tab">文库</a>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="community" role="tabpanel">
+                        <div class="row">
+                            <div v-for="(item) in talk.talks" class="px-3 col-12">
+                                <div class="card mb-4">
+                                    <div class="card-body pb-0 pt-3">
+                                        <div class="mb-2">
+                                            <a class="h6 widget-link mb-0" :href="'/community/view?id=' + item.id"><b
+                                                    v-text="item.title"></b></a>
+                                        </div>
+                                        <p class="mb-3" v-text="item.content"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <pagination :pages="talk.pages" :now-page="talk.nowPage"
+                                    :on-change="changeTalkPage"></pagination>
+                    </div>
+                    <div class="tab-pane fade" id="article" role="tabpanel">
+                        <div class="row">
+                            <div v-for="(item) in article.articles" class="px-3 col-12">
+                                <div class="card mb-4">
+                                    <div class="card-body pb-0 pt-3">
+                                        <div class="mb-2">
+                                            <a class="h6 widget-link mb-0" :href="'/article/view?id=' + item.id"><b
+                                                    v-text="item.title"></b></a>
+                                        </div>
+                                        <p class="mb-3" v-text="item.description"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <pagination :pages="article.pages" :now-page="article.nowPage"
+                                    :on-change="changeArticlePage"></pagination>
+                    </div>
+                    <div class="tab-pane fade" id="video" role="tabpanel">
+                        <div class="row">
+                            <div v-for="(item) in video.videos" class="px-3 col-12">
+                                <div class="card mb-4">
+                                    <div class="card-body pb-0 pt-3">
+                                        <div class="mb-2">
+                                            <a class="h6 widget-link mb-0" :href="'/video/view?id=' + item.id"><b
+                                                    v-text="item.title"></b></a>
+                                        </div>
+                                        <p class="mb-3" v-text="item.description"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <pagination :pages="video.pages" :now-page="video.nowPage"
+                                    :on-change="changeVideoPage"></pagination>
+                    </div>
+                    <div class="tab-pane fade" id="document" role="tabpanel">
+                        <div class="row">
+                            <div v-for="(item) in document.documents" class="px-3 col-12">
+                                <div class="card mb-4">
+                                    <div class="card-body pb-0 pt-3">
+                                        <div class="mb-2">
+                                            <a class="h6 widget-link mb-0" :href="'/document/view?id=' + item.id"><b
+                                                    v-text="item.title"></b></a>
+                                        </div>
+                                        <p class="mb-3" v-text="item.description"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <pagination :pages="document.pages" :now-page="document.nowPage"
+                                    :on-change="changeDocumentPage"></pagination>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script>
+    var app = new Vue({
+        el: 'main',
+        data: {
+            isFollow: false,
+            talk: {
+                count: 0,
+                pages: [],
+                nowPage: 1,
+                maxPage: 1,
+                talks: []
+            },
+            article: {
+                count: 0,
+                pages: [],
+                nowPage: 1,
+                maxPage: 1,
+                articles: []
+            },
+            video: {
+                count: 0,
+                pages: [],
+                nowPage: 1,
+                maxPage: 1,
+                videos: []
+            },
+            document: {
+                count: 0,
+                pages: [],
+                nowPage: 1,
+                maxPage: 1,
+                documents: []
+            }
+        },
+        methods: {
+            loadOverView: function () {
+                this.$http.get("/api/account/overview", {params: {uid: [[${user.getId()}]]}}).then(({data}) => {
+                    if (data.code === 0)
+                        this.isFollow = data.data.isFollow;
+                    else
+                        message.add("关注失败", data.msg);
+                });
+            },
+            loadTalk: function () {
+                this.$http.get('/api/community/getTalkList', {
+                    params: {
+                        userId: [[${user.getId()}]],
+                        page: this.talk.nowPage
+                    }
+                }).then(({data}) => {
+                    this.talk.count = data.data.count;
+                    this.talk.pages = data.data.pages;
+                    this.talk.nowPage = data.data.nowPage;
+                    this.talk.maxPage = data.data.maxPage;
+                    this.talk.talks = data.data.talks;
+                }, () => {
+
+                });
+            },
+            loadArticle: function () {
+                this.$http.get('/api/article/getArticleList', {
+                    params: {
+                        userId: [[${user.getId()}]],
+                        page: this.article.nowPage
+                    }
+                }).then(({data}) => {
+                    this.article.count = data.data.count;
+                    this.article.pages = data.data.pages;
+                    this.article.nowPage = data.data.nowPage;
+                    this.article.maxPage = data.data.maxPage;
+                    this.article.articles = data.data.articles;
+                }, () => {
+
+                });
+            },
+            loadVideo: function () {
+                this.$http.get('/api/video/getVideoList', {
+                    params: {
+                        userId: [[${user.getId()}]],
+                        page: this.video.nowPage
+                    }
+                }).then(({data}) => {
+                    this.video.count = data.data.count;
+                    this.video.pages = data.data.pages;
+                    this.video.nowPage = data.data.nowPage;
+                    this.video.maxPage = data.data.maxPage;
+                    this.video.videos = data.data.videos;
+                }, () => {
+
+                });
+            },
+            loadDocument: function () {
+                this.$http.get('/api/document/getDocumentList', {
+                    params: {
+                        userId: [[${user.getId()}]],
+                        page: this.document.nowPage
+                    }
+                }).then(({data}) => {
+                    this.document.count = data.data.count;
+                    this.document.pages = data.data.pages;
+                    this.document.nowPage = data.data.nowPage;
+                    this.document.maxPage = data.data.maxPage;
+                    this.document.documents = data.data.documents;
+                }, () => {
+
+                });
+            },
+            changeTalkPage: function (page) {
+                this.talk.nowPage = Math.min(this.talk.maxPage, Math.max(1, page));
+                this.loadTalk();
+            },
+            changeArticlePage: function (page) {
+                this.article.nowPage = Math.min(this.article.maxPage, Math.max(1, page));
+                this.loadArticle();
+            },
+            changeVideoPage: function (page) {
+                this.video.nowPage = Math.min(this.video.maxPage, Math.max(1, page));
+                this.loadVideo();
+            },
+            changeDocumentPage: function (page) {
+                this.document.nowPage = Math.min(this.document.maxPage, Math.max(1, page));
+                this.loadDocument();
+            },
+            follow: function () {
+                this.$http.post("/api/account/follow", {
+                    uid: [[${user.getId()}]],
+                    follow: !this.isFollow
+                }).then(({data}) => {
+                    this.loadOverView();
+                });
+            }
+        },
+        mounted: function () {
+            this.loadOverView();
+            this.loadTalk();
+            this.loadArticle();
+            this.loadVideo();
+            this.loadDocument();
+        }
+    });
+</script>
+</body>
+</html>

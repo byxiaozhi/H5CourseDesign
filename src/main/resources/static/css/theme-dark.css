@@ -1,0 +1,18 @@
+html {
+    filter: invert(1) hue-rotate(180deg);
+}
+
+.shadow-lg, .shadow-sm, .navbar-shadow, .navbar-stuck {
+    box-shadow: none !important;
+    border:1px solid #ddd !important;
+}
+
+.dropdown-menu {
+    box-shadow: none !important;
+    border:1px solid #ddd !important;
+}
+
+img, .card-img-top, .dplayer {
+    filter: invert(1) hue-rotate(180deg);
+    border: 0 !important;
+}

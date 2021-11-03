@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-cn">
+<head>
+    <title>文库</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <th:block th:replace="components/main::IncludeHead"/>
+</head>
+<body style="background-color:#f7f7fc;">
+<th:block th:replace="components/main::Navbar(immersive=true)"/>
+<main class="page-wrapper">
+    <div class="container py-4 mb-2 mb-sm-0 pb-sm-5 mt-lg-6 mt-5">
+        <div class="pt-3 pt-md-0">
+            <div class="row mx-0 mb-2 justify-content-between">
+                <ul class="col-lg-auto nav nav-tabs justify-content-center">
+                    <li class="nav-item"><a class="nav-link" th:classappend="${category == '全部'} ? 'active'" href="/document">全部</a></li>
+                    <li th:each="item : ${categories}">
+                        <a class="nav-link"
+                           th:classappend="${category == item} ? 'active'"
+                           th:href="@{/document(category=${item})}"
+                           th:text="${item}"></a>
+                    </li>
+                </ul>
+                <div class="col-lg-auto px-0 mb-3 ">
+                    <div class="input-group">
+                        <i class="ai-search position-absolute top-50 start-0 translate-middle-y ms-3"></i>
+                        <input class="form-control rounded" type="text" th:value="${search}" placeholder="标题、简介"
+                               onkeydown="((e) => { e.keyCode === 13 && (window.location.href = `/document?search=${this.value}`)})(event)">
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6 col-md-4 col-lg-3 mb-4" v-for="(item) in documents">
+                    <a class="card card-hover border-0 shadow" :href="'/document/view?id=' + item.id">
+                        <img class="card-img-top" :src="item.cover">
+                        <div class="card-body nav-link px-0 mx-3 py-1 fs-ms text-nowrap overflow-hidden" style="text-overflow: ellipsis;" v-text="item.title"></div>
+                    </a>
+                </div>
+            </div>
+            <pagination :pages="pages" :now-page="nowPage" :on-change="changePage"></pagination>
+        </div>
+    </div>
+</main>
+<th:block th:replace="components/main::Footer"/>
+<th:block th:replace="components/main::IncludeFoot"/>
+<script th:inline="javascript">
+    const talkList = new Vue({
+            el: 'main',
+            data: {
+                category: [[${category}]],
+                count: 0,
+                pages: [],
+                nowPage: 1,
+                maxPage: '',
+                documents: [],
+            },
+            methods: {
+                load: function () {
+                    this.$http.get('/api/document/getDocumentList', {params: {category: [[${category}]], search: [[${search}]], page: this.nowPage}}).then(({data}) => {
+                        this.count = data.data.count;
+                        this.pages = data.data.pages;
+                        this.nowPage = data.data.nowPage;
+                        this.maxPage = data.data.maxPage;
+                        this.documents = data.data.documents;
+                        window.scroll({top: 0, left: 0, behavior: 'smooth'});
+                    }, () => {
+
+                    });
+                },
+                changePage: function (page) {
+                    this.nowPage = Math.min(this.maxPage, Math.max(1, page));
+                    this.load();
+                }
+            },
+            mounted: function () {
+                this.load();
+            }
+        }
+    );
+</script>
+</body>
+</html>
